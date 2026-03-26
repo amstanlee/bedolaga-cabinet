@@ -20,6 +20,7 @@ import { promoApi } from '../api/promo';
 import PendingGiftCard from '../components/dashboard/PendingGiftCard';
 import SubscriptionListCard from '../components/subscription/SubscriptionListCard';
 import { API } from '../config/constants';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';  // === MOD START ===
 
 const ChevronRightIcon = () => (
   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -276,6 +277,47 @@ export default function Dashboard() {
             </span>
           )}
         </div>
+      </div>
+
+      {/* Top Up Balance Button === MOD START === */}
+      <div className="mt-2" data-onboarding="balance">
+        <HoverBorderGradient
+          as="button"
+          accentColor="#5d3bf6"
+          onClick={() => {
+            const user = useAuthStore.getState().user;
+            if (!user) return;
+
+            // --- Определяем label ---
+            let label: string | null = null;
+
+            if (user.telegram_id) {
+              label = String(user.telegram_id);
+            } else if (user.email) {
+              label = encodeURIComponent(user.email);
+            }
+
+            if (!label) {
+              console.error("Не удалось определить идентификатор пользователя для оплаты");
+              return;
+            }
+
+            const topUpUrl = `https://pay.pk-masternsk.ru/?uid=${label}`;
+            window.open(topUpUrl, "_blank");
+          }}
+          className="flex w-full items-center gap-3.5 rounded-[14px] p-3.5 text-left transition-shadow duration-300"
+          style={{
+            fontFamily: "inherit",
+            background:
+              "linear-gradient(90deg, #0077cc, #00cc66) padding-box, conic-gradient(from var(--border-angle), var(--_accent) 0%, transparent 25%, transparent 75%, var(--_accent) 100%) border-box",
+          }}
+        >
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold tracking-tight text-dark-50">
+              Пополнить баланс
+            </div>
+          </div>
+        </HoverBorderGradient>
       </div>
 
       {/* Pending Gift Activations */}
