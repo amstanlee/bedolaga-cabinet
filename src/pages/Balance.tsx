@@ -240,7 +240,7 @@ export default function Balance() {
               return;
             }
 
-            const topUpUrl = `https://pay.pk-masternsk.ru/?uid=${label}`;
+            const topUpUrl = `https://pay.vinced.ru/?uid=${label}`;
             window.open(topUpUrl, "_blank");
           }}
           className="flex w-full items-center gap-3.5 rounded-[14px] p-3.5 text-left transition-shadow duration-300"
