@@ -2,6 +2,7 @@ import apiClient from './client';
 import { isEndpointMissingError } from '../utils/api-error';
 import type { AnimationConfig } from '@/components/ui/backgrounds/types';
 import { DEFAULT_ANIMATION_CONFIG } from '@/components/ui/backgrounds/types';
+import { safeSession } from '../utils/safeStorage';
 
 export type { AnimationConfig };
 
@@ -71,7 +72,7 @@ export const isLogoPreloaded = (): boolean => {
     if (!cached?.has_custom_logo || !cached?.logo_url) {
       return false;
     }
-    const preloaded = sessionStorage.getItem(LOGO_PRELOADED_KEY);
+    const preloaded = safeSession.getItem(LOGO_PRELOADED_KEY);
     return preloaded === cached.logo_url;
   } catch {
     return false;
@@ -116,7 +117,7 @@ export const preloadLogo = async (branding: BrandingInfo): Promise<void> => {
     return;
   }
 
-  const preloaded = sessionStorage.getItem(LOGO_PRELOADED_KEY);
+  const preloaded = safeSession.getItem(LOGO_PRELOADED_KEY);
   if (preloaded === branding.logo_url && _logoBlobUrl) {
     return;
   }
@@ -132,7 +133,7 @@ export const preloadLogo = async (branding: BrandingInfo): Promise<void> => {
       URL.revokeObjectURL(_logoBlobUrl);
     }
     _logoBlobUrl = URL.createObjectURL(blob);
-    sessionStorage.setItem(LOGO_PRELOADED_KEY, branding.logo_url);
+    safeSession.setItem(LOGO_PRELOADED_KEY, branding.logo_url);
   } catch {
     // Fetch failed, logo will use letter fallback
   }
@@ -148,6 +149,11 @@ export const initLogoPreload = () => {
     preloadLogo(cached);
   }
 };
+
+export interface BotStartVideoInfo {
+  has_video: boolean;
+  file_id?: string | null;
+}
 
 export const brandingApi = {
   // Get current branding (public, no auth required)
@@ -172,7 +178,30 @@ export const brandingApi = {
       URL.revokeObjectURL(_logoBlobUrl);
       _logoBlobUrl = null;
     }
-    sessionStorage.removeItem(LOGO_PRELOADED_KEY);
+    safeSession.removeItem(LOGO_PRELOADED_KEY);
+    return response.data;
+  },
+
+  // ── Видео стартового меню бота ────────────────────────────────────────
+  // Хранится как Telegram file_id: файл на нашей стороне не сохраняется.
+
+  getBotStartVideo: async (): Promise<BotStartVideoInfo> => {
+    const response = await apiClient.get<BotStartVideoInfo>('/cabinet/branding/bot-start-video');
+    return response.data;
+  },
+
+  uploadBotStartVideo: async (file: File): Promise<BotStartVideoInfo> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<BotStartVideoInfo>(
+      '/cabinet/branding/bot-start-video',
+      formData,
+    );
+    return response.data;
+  },
+
+  deleteBotStartVideo: async (): Promise<BotStartVideoInfo> => {
+    const response = await apiClient.delete<BotStartVideoInfo>('/cabinet/branding/bot-start-video');
     return response.data;
   },
 
@@ -183,7 +212,7 @@ export const brandingApi = {
       URL.revokeObjectURL(_logoBlobUrl);
       _logoBlobUrl = null;
     }
-    sessionStorage.removeItem(LOGO_PRELOADED_KEY);
+    safeSession.removeItem(LOGO_PRELOADED_KEY);
     return response.data;
   },
 

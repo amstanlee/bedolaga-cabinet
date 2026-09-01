@@ -14,6 +14,7 @@ import {
 import { AdminBackButton } from '../components/admin';
 import { createNumberInputHandler, toNumber } from '../utils/inputHelpers';
 import Twemoji from 'react-twemoji';
+import { PageSkeleton, Skeleton } from '@/components/ui/skeleton';
 import {
   CalendarIcon,
   CheckIcon,
@@ -50,6 +51,7 @@ export default function AdminTariffCreate() {
   const [selectedExternalSquad, setSelectedExternalSquad] = useState<string | null>(null);
   const [selectedPromoGroups, setSelectedPromoGroups] = useState<number[]>([]);
   const [dailyPriceKopeks, setDailyPriceKopeks] = useState<number | ''>(0);
+  const [lavaProductId, setLavaProductId] = useState('');
 
   // Traffic topup
   const [trafficTopupEnabled, setTrafficTopupEnabled] = useState(false);
@@ -122,6 +124,7 @@ export default function AdminTariffCreate() {
         data.promo_groups?.filter((pg) => pg.is_selected).map((pg) => pg.id) || [],
       );
       setDailyPriceKopeks(data.daily_price_kopeks || 0);
+      setLavaProductId(data.lava_product_id || '');
       setTrafficTopupEnabled(data.traffic_topup_enabled || false);
       setMaxTopupTrafficGb(data.max_topup_traffic_gb || 0);
       setTrafficTopupPackages(data.traffic_topup_packages || {});
@@ -176,6 +179,8 @@ export default function AdminTariffCreate() {
       max_topup_traffic_gb: toNumber(maxTopupTrafficGb),
       is_daily: isDaily,
       daily_price_kopeks: isDaily ? toNumber(dailyPriceKopeks) : 0,
+      // Пустая строка отвязывает тариф от продукта Lava
+      lava_product_id: lavaProductId.trim(),
       traffic_reset_mode: trafficResetMode,
     };
 
@@ -270,9 +275,12 @@ export default function AdminTariffCreate() {
   // Loading state
   if (isEdit && isLoadingTariff) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-500 border-t-transparent" />
-      </div>
+      <PageSkeleton variant="admin" leading={1} titleWidth="w-56" className="space-y-6">
+        <div className="flex gap-2">
+          <Skeleton count={4} className="h-10 w-28 shrink-0 rounded-xl" />
+        </div>
+        <Skeleton variant="card" className="h-96" />
+      </PageSkeleton>
     );
   }
 
@@ -459,6 +467,25 @@ export default function AdminTariffCreate() {
               <p className="mt-2 text-xs text-dark-500">{t('admin.tariffs.dailyDeductionDesc')}</p>
             </div>
           )}
+
+          {/* Lava recurrent product */}
+          <div>
+            <label
+              htmlFor="tariff-lava-product"
+              className="mb-2 block text-sm font-medium text-dark-300"
+            >
+              {t('admin.tariffs.lavaProductLabel')}
+            </label>
+            <input
+              id="tariff-lava-product"
+              type="text"
+              value={lavaProductId}
+              onChange={(e) => setLavaProductId(e.target.value)}
+              className="input w-full"
+              placeholder="6be21df9-0bcd-44ac-9c2c-3be7bc94decc"
+            />
+            <p className="mt-2 text-xs text-dark-500">{t('admin.tariffs.lavaProductDesc')}</p>
+          </div>
 
           {/* Traffic Limit */}
           <div>
