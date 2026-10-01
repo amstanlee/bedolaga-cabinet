@@ -10,13 +10,12 @@ import { balanceApi } from '../api/balance';
 import { useCurrency } from '../hooks/useCurrency';
 import { API } from '../config/constants';
 import type { PaginatedResponse, Transaction } from '../types';
-
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';  // === MOD START ===
 import { Card } from '@/components/data-display/Card';
 import { Button } from '@/components/primitives/Button';
 import { ChevronDownIcon, ChevronRightIcon, CreditCardIcon, WalletIcon } from '@/components/icons';
 import { staggerContainer, staggerItem } from '@/components/motion/transitions';
 import { isPaidStatus, isFailedStatus } from '../utils/paymentStatus';
-import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';  // === MOD START ===
 import { transactionTypeBadge, transactionTypeLabelKey } from '../utils/transactionType';
 import { Skeleton, SkeletonGroup } from '@/components/ui/skeleton';
 
